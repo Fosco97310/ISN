@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8"/>
+    <title>Projectile</title>
+    </head>
+    <style>
+        body {
+            overflow: hidden;
+            margin: auto;
+            background-image: url(https://lh3.googleusercontent.com/aRxSyx1QeBrst2ZvA4M7r2MvC3jEcBi-FLkB4MkByBnLonJkE4bLV5kQq5bKBrcvCzgj=h900);
+            background-size: auto 900px; 
+            background-repeat: repeat-x;
+            background-color: #8A5D3B;
+        }
+        #menu {
+            position: fixed;
+            width: 300px;
+            padding: 8px;
+            margin: 20px;
+            border-radius: 7px;
+            background-color: white;
+            box-shadow: 0 0 10px black;    
+        }
+        
+        input[type=number] {
+            width: 85%;
+            padding: 12px 20px;
+            margin: 8px;
+            border: 1px solid grey;
+            border-radius: 4px;
+            box-sizing: border-box
+        }
+
+        input[type=checkBox]{
+            height: 20px;
+            margin: 3px;
+            width: 20px;
+            background-color: #eee;
+        }
+
+        
+        label {
+            display: inline-block;
+            width: 20px;
+            text-align: right;
+            font-family: verdana;
+            font-size: 24px;
+        }
+        
+        h1 {
+            margin: 10px;
+            font-family: verdana;
+            font-size: 32px;      
+        }
+
+    </style>
+	<body>
+        <div id="menu">
+            <h1>Simulation d’un projectile</h1>
+            <label>v₀</label>
+            <input type="number" id="v" min="90" max="150" value="120" oninput="init()"><br>
+            <label>Ⲑ</label>
+            <input type="number" id="alpha" min="0" max="90" value="45" oninput="init()"><br>
+            <input type="checkBox" id="axis" onchange="init()">
+            <label>Axes</label>
+        </div>
+        
+
+        <canvas id="myCanvas" width=2000; height="800" >
+        Votre navigateur ne supporte pas le HTML5
+        </canvas>
+        
+		<script>
+            var c = document.getElementById("myCanvas");
+            var ctx = c.getContext("2d");
+            var y;
+            var x;
+            var x_canon;
+            var y_canon;
+            var Vo;
+            var alpha;
+            var t = 0;
+            var axis = true;
+            var xPorte;
+            var hauteur;
+
+            init();
+            draw();
+            
+			function draw() {
+                
+                //Temps
+                t += 1/2;
+                
+                //Coordonnées projectile
+                x = 100 + Vo * Math.cos(alpha) * t;
+                y = 790 + 9.81 /2 * t * t + Vo * Math.sin(alpha) * t;
+            
+                //Dessiner trajectoire
+                ctx.beginPath();
+                ctx.arc(x,y,8,0,2*Math.PI);
+                ctx.fillStyle = "rgb(35,40,44)";
+                ctx.fill();
+                ctx.closePath();
+
+                window.requestAnimationFrame(draw);
+            }
+            
+            function init(){
+
+                ctx.clearRect(0,0,c.width,c.height);
+                alpha = -Math.PI/180 * document.getElementById("alpha").value;
+                Vo = document.getElementById("v").value;
+                
+                
+            //AXES
+                if(document.getElementById("axis").checked){
+                    ctx.lineWidth=5;
+                    ctx.beginPath();
+                    ctx.moveTo(100,790);
+                    ctx.lineTo(2000,790);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.moveTo(100,790);
+                    ctx.lineTo(100,-1000);
+                    ctx.stroke();
+                    ctx.closePath(); 
+                }
+                
+            
+            //ECHELLE
+            	ctx.beginPath();
+                ctx.lineWidth=4;
+                ctx.font = "30px Verdana";
+            	ctx.moveTo(500,150);
+                ctx.lineTo(550,150);
+                ctx.stroke();
+                ctx.closePath();
+                ctx.fillText("1m", 500, 140);
+
+            //PORTE 
+                ctx.beginPath();
+                ctx.strokeStyle = "red";
+                ctx.arc(100,790,80,alpha,0);
+                ctx.stroke();
+                ctx.closePath();
+
+                xPorte = -(Vo*Vo/9.81)*Math.sin(2*alpha);
+
+                ctx.beginPath();
+                ctx.fillStyle='red';
+                ctx.arc(100+xPorte,790,10,2*Math.PI,0);
+                ctx.fillText(Math.round(xPorte/50)+"m", 110+xPorte, 800);
+                ctx.fill();
+                ctx.closePath();
+            //HAUTEUR 
+
+                hauteur = (Vo*Vo*Math.sin(alpha)*Math.sin(alpha))/(2*9.81);
+
+                ctx.beginPath();
+                ctx.moveTo(100+(xPorte/2),790);
+                ctx.lineTo(100+(xPorte/2),790-hauteur);
+                ctx.fillText(Math.round(hauteur/50) +"m", 110+(xPorte/2), 800);
+                ctx.stroke();
+                ctx.closePath();
+                
+            //MAINTIEN
+                ctx.beginPath();
+                ctx.lineWidth=5;
+                ctx.strokeStyle='black';
+                ctx.moveTo(15+20,449+350+10);
+                ctx.lineTo(15+20,420+350+10);
+                ctx.moveTo(10+20,420+350+10);
+                ctx.lineTo(20+20,420+350+10);
+                ctx.stroke();
+                ctx.closePath();
+                ctx.beginPath();
+                ctx.lineWidth=10;
+                ctx.strokeStyle='rgb(145,89,34)';
+                ctx.moveTo(10+20,450+350+10);
+                ctx.lineTo(70+20,420+350+10);
+                ctx.stroke();
+                ctx.closePath();
+                
+            //CANON
+                ctx.beginPath();
+                ctx.lineWidth=1;
+                ctx.strokeStyle='black';
+                ctx.fillStyle='rgb(35,40,44)';
+                ctx.arc(100,790,24,2*Math.PI,0);
+                ctx.stroke();
+                ctx.fill();
+                ctx.closePath();
+                
+                
+            //CANON UTILE
+                x_canon = 100*Math.cos(alpha)+100;
+                y_canon = 100*Math.sin(alpha)+790;
+                ctx.beginPath();
+                ctx.lineWidth=50;
+                ctx.strokeStyle='black';
+                ctx.strokeStyle='rgb(35,40,44)';
+                ctx.moveTo(100,790);
+                ctx.lineTo(x_canon,y_canon);
+                ctx.stroke();
+                ctx.closePath();
+                
+         
+            //ROUE
+                ctx.beginPath();
+                ctx.lineWidth=2;
+                ctx.strokeStyle='black';
+                ctx.fillStyle='rgb(145,89,34)';
+                ctx.arc(90+20,450+320+20,30,2*Math.PI,0);
+                ctx.stroke();
+                ctx.fill();
+                ctx.closePath();
+                ctx.beginPath();
+                ctx.fillStyle='rgb(35,40,44)';
+                ctx.arc(90+20,450+320+20,20,2*Math.PI,0);
+                ctx.fill();
+                ctx.closePath();
+                ctx.beginPath();
+                ctx.lineWidth=7;
+                ctx.strokeStyle='rgb(145,89,34)';
+                ctx.moveTo(70+20,440+20+320);
+                ctx.lineTo(110+20,465+20+320);
+                ctx.moveTo(110+20,435+20+320);
+                ctx.lineTo(70+20,465+20+320);
+                ctx.stroke();
+                ctx.closePath();
+                ctx.beginPath();
+                ctx.lineWidth=1;
+                ctx.strokeStyle='black';
+                ctx.fillStyle='rgb(145,89,34)';
+                ctx.arc(90+20,450+320+20,10,2*Math.PI,0);
+                ctx.stroke();  
+                ctx.fill();
+                ctx.closePath();
+                ctx.beginPath();
+                ctx.strokeStyle='black';
+                ctx.arc(90+20,450+320+20,20,2*Math.PI,0);
+                ctx.stroke();
+                ctx.closePath();
+                
+                t = 0;
+            }
+		</script>
+	</body>
+</html>
